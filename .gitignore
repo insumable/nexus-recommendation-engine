@@ -1,0 +1,4 @@
+*.duckdb
+*.wal
+.venv
+.idea
