@@ -1,4 +1,17 @@
+# Ignore Python virtual environment
+.venv/
+venv/
+
+# Ignore local data files and databases
+data/
 *.duckdb
-*.wal
-.venv
-.idea
+*.duckdb.wal
+
+# Ignore PyCharm internal project files
+.idea/
+__pycache__/
+*.pyc
+
+# Ignore PyCharm IDE files
+.idea/
+*.iml
