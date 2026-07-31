@@ -1,6 +1,6 @@
 # 🚀 Nexus Recommendation Engine
 
-A high-throughput, sub-5ms latency recommendation engine processing **43.8M+ user interactions** across **1.4M+ catalog items**. 
+A high-throughput, sub-5ms latency recommendation engine processing **43.8M+ user interactions** across **1.4M+ catalog items**.
 
 Built with **Implicit ALS**, **DuckDB**, **Redis**, and **FastAPI**, fully containerized using **Docker Compose**.
 
@@ -60,21 +60,63 @@ flowchart TD
         F <-->|Fast Path < 5ms| E
         F <-->|Fallback Path < 50ms| D
     end
-Analytical Ingestion: DuckDB manages zero-copy querying over the massive review dataset to build compressed SciPy CSR matrices.Batch Pre-computation: Active user factors are dot-product multiplied against all item factors and pushed into Redis as JSON strings.Cache-Aside REST API:Fast Path: Serves pre-cached JSON recommendations directly from Redis ($<5\text{ms}$).Fallback Path: Computes dynamic matrix dot-product scores for non-cached active users on the fly ($<50\text{ms}$).📂 Repository StructurePlaintextnexus-recommendation-engine/
+```
+
+- **Analytical Ingestion:** DuckDB manages zero-copy querying over the massive review dataset to build compressed SciPy CSR matrices.
+- **Batch Pre-computation:** Active user factors are dot-product multiplied against all item factors and pushed into Redis as JSON strings.
+- **Cache-Aside REST API:**
+  - **Fast Path:** Serves pre-cached JSON recommendations directly from Redis ($<5\text{ms}$).
+  - **Fallback Path:** Computes dynamic matrix dot-product scores for non-cached active users on the fly ($<50\text{ms}$).
+
+---
+
+## 📂 Repository Structure
+
+```
+nexus-recommendation-engine/
 ├── als_factors.npz           # Model weights (User & Item factor matrices)
 ├── mappings.pkl              # Index lookup mappings (User/Item string IDs)
-├── nexus.duckdb              # DuckDB analytical database file
+├── nexus.duckdb               # DuckDB analytical database file
 ├── cache_recommendations.py  # Script to precompute & batch load Redis cache
 ├── main.py                   # FastAPI application & endpoint definitions
 ├── requirements.txt          # Python project dependencies
 ├── Dockerfile                # API container spec
 ├── docker-compose.yml        # Multi-container orchestration (FastAPI + Redis)
 └── README.md                 # Project documentation
-🔌 API Reference & Endpoints1. Health CheckEndpoint: GET /healthDescription: Verifies service uptime and Redis connection status.Response:JSON{
+```
+
+---
+
+## 🔌 API Reference & Endpoints
+
+### 1. Health Check
+
+**Endpoint:** `GET /health`
+**Description:** Verifies service uptime and Redis connection status.
+
+**Response:**
+```json
+{
   "status": "online",
   "redis_connected": true
 }
-2. User RecommendationsEndpoint: GET /recommend/{user_id}Query Parameters:k (integer, optional, default=10, min=1, max=50): Number of items to return.Sample Request:GET /recommend/AFKZENTNBQ7A7V7UXW5JJI6UGRYQ?k=5Sample Response:JSON{
+```
+
+### 2. User Recommendations
+
+**Endpoint:** `GET /recommend/{user_id}`
+
+**Query Parameters:**
+- `k` (integer, optional, default=10, min=1, max=50): Number of items to return.
+
+**Sample Request:**
+```
+GET /recommend/AFKZENTNBQ7A7V7UXW5JJI6UGRYQ?k=5
+```
+
+**Sample Response:**
+```json
+{
   "user_id": "AFKZENTNBQ7A7V7UXW5JJI6UGRYQ",
   "source": "redis_cache",
   "latency_ms": 2.14,
@@ -91,3 +133,4 @@ Analytical Ingestion: DuckDB manages zero-copy querying over the massive review 
     }
   ]
 }
+```
